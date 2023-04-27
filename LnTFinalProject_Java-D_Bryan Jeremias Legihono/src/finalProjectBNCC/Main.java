@@ -196,6 +196,22 @@ public class Main extends JFrame{
 		
 		this.setJMenuBar(menuBar);
 		
+		// Main menu:
+		JPanel openingPanel = new JPanel(null);
+		
+		JLabel guideTitle = new JLabel("Petunjuk:");
+		guideTitle.setBounds(10,10,100,25);
+		openingPanel.add(guideTitle);
+		
+		JLabel guideContent = new JLabel("Untuk dapat menggunakan program ini, silahkan klik menu apapun yang terletak pada bagian menu bar.");
+		guideContent.setBounds(10,20,600,50);
+		guideContent.setFont(new Font("sans-serif", Font.PLAIN, 11));
+		openingPanel.add(guideContent);
+		
+		mainPanel.add(openingPanel, BorderLayout.CENTER);
+		
+		//
+		
 		this.add(mainPanel, BorderLayout.CENTER);
 	}
 	
@@ -366,7 +382,7 @@ public class Main extends JFrame{
 			e1.printStackTrace();
 		}
 		
-		JLabel codeLabel = new JLabel("Kode Menu yang Ingin Di-update:");
+		JLabel codeLabel = new JLabel("Kode menu yang ingin di-update:");
 		codeLabel.setBounds(20,260,200,25);
 		updateMenu.add(codeLabel);
 		
