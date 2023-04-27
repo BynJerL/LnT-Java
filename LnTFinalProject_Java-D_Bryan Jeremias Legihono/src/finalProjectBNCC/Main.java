@@ -57,14 +57,7 @@ public class Main extends JFrame{
 		this.setLayout(new BorderLayout());
 		this.setLocation(0,0);
 		
-		
 		components();
-		// Windows color (Header & content background)
-		// Windows icon customization
-		// Windows layout customization
-		// Anything for making a good windows
-		// Customization of Cursor Arrow
-		// Custom text color
 		
 		this.setVisible(true);
 	}
