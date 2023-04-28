@@ -13,6 +13,10 @@ import javax.swing.*;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 
+import com.mysql.cj.conf.PropertyDefinitions.DatabaseTerm;
+
+import finalProjectBNCC.Database.sortingMode;
+
 public class Main extends JFrame{
 	
 	// Colors
@@ -34,12 +38,21 @@ public class Main extends JFrame{
 	// Chars
 	String ALPHABETH_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 	String NUMBER_CHARS = "0123456789";
+	String[] CB_CONTENT = {
+			"Kode (naik)","Kode (turun)",
+			"Nama (naik)","Nama (turun)",
+			"Harga (naik)","Harga (turun)",
+			"Stok (naik)","Stok (turun)"};
 	
 	// Random
 	Random rand = new Random();
 	
 	// Database
 	Database myDB = new Database();
+	
+	// Other
+	boolean isSorted = false;
+	sortingMode sortOp;
 	
 	public Main() {
 		window();
@@ -56,6 +69,7 @@ public class Main extends JFrame{
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		this.setLayout(new BorderLayout());
 		this.setLocation(0,0);
+		
 		
 		components();
 		
@@ -83,32 +97,31 @@ public class Main extends JFrame{
 		menuBar.add(insert);
 		insert.addMenuListener(new MenuListener() {
 			@Override
-			public void menuSelected(MenuEvent e) {
-				// Preparation
-				view(mainPanel);
-				mainPanel.repaint();
-				mainPanel.revalidate();
-				
+			public void menuSelected(MenuEvent e) {				
 				// Remove Panel
 				mainPanel.removeAll();
 				mainPanel.repaint();
 				mainPanel.revalidate();
 				
 				// Add Panel
-				insert(mainPanel);
+				try {
+					insert(mainPanel);
+				} catch (SQLException e1) {
+					e1.printStackTrace();
+				}
 				mainPanel.repaint();
 				mainPanel.revalidate();
 			}
 			
 			@Override
 			public void menuDeselected(MenuEvent e) {
-				// TODO Auto-generated method stub
+				// Unused
 				
 			}
 			
 			@Override
 			public void menuCanceled(MenuEvent e) {
-				// TODO Auto-generated method stub
+				// Unused
 				
 			}
 		});
@@ -123,19 +136,23 @@ public class Main extends JFrame{
 				mainPanel.revalidate();
 				
 				// Add Panel
-				view(mainPanel);
+				try {
+					view(mainPanel);
+				} catch (SQLException e1) {
+					e1.printStackTrace();
+				}
 				mainPanel.repaint();
 				mainPanel.revalidate();
 			}
 			
 			@Override
 			public void menuDeselected(MenuEvent e) {
-				// TODO Auto-generated method stub
+				// Unused
 			}
 			
 			@Override
 			public void menuCanceled(MenuEvent e) {
-				// TODO Auto-generated method stub
+				// Unused
 				
 			}
 		});
@@ -150,21 +167,23 @@ public class Main extends JFrame{
 				mainPanel.revalidate();
 				
 				// Add Panel
-				update(mainPanel);
+				try {
+					update(mainPanel);
+				} catch (SQLException e1) {
+					e1.printStackTrace();
+				}
 				mainPanel.repaint();
 				mainPanel.revalidate();
 			}
 			
 			@Override
 			public void menuDeselected(MenuEvent e) {
-				// TODO Auto-generated method stub
-				
+				// Unused
 			}
 			
 			@Override
 			public void menuCanceled(MenuEvent e) {
-				// TODO Auto-generated method stub
-				
+				// Unused
 			}
 		});
 		
@@ -178,7 +197,11 @@ public class Main extends JFrame{
 				mainPanel.revalidate();
 				
 				// Add Panel
-				delete(mainPanel);
+				try {
+					delete(mainPanel);
+				} catch (SQLException e1) {
+					e1.printStackTrace();
+				}
 				mainPanel.repaint();
 				mainPanel.revalidate();
 			}
@@ -210,14 +233,14 @@ public class Main extends JFrame{
 		
 		mainPanel.add(openingPanel, BorderLayout.CENTER);
 		
-		//
-		
 		this.add(mainPanel, BorderLayout.CENTER);
 	}
 	
 	//Integer.MAX_VALUE
 	
-	public void insert(JPanel mainPanel) {
+	public void insert(JPanel mainPanel) throws SQLException {
+		listPreparation();
+		
 		JPanel insertMenu = new JPanel(null);
 		
 		JLabel nameLabel= new JLabel("Nama Menu:", SwingConstants.LEFT);
@@ -276,7 +299,6 @@ public class Main extends JFrame{
 				
 				Menu menuBaru = new Menu(kodeMenu, namaMenu, hargaMenu, stokMenu);
 				myDB.insert(menuBaru);
-//				listMenu.add(menuBaru);
 				
 				System.out.println("Input berhasil");
 				
@@ -288,7 +310,11 @@ public class Main extends JFrame{
 				mainPanel.repaint();
 				mainPanel.revalidate();
 				
-				insert(mainPanel);
+				try {
+					insert(mainPanel);
+				} catch (SQLException e1) {
+					e1.printStackTrace();
+				}
 				mainPanel.repaint();
 				mainPanel.revalidate();
 			}
@@ -301,19 +327,84 @@ public class Main extends JFrame{
 		mainPanel.add(insertMenu, BorderLayout.CENTER);
 	}
 	
-	public void view(JPanel mainPanel) {		
+	public void view(JPanel mainPanel) throws SQLException {		
+		listPreparation();
+		
 		JPanel viewMenu = new JPanel(null);
 		
-		try {
-			viewTable(viewMenu);
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
+		viewTable(viewMenu);
 		
 		JLabel menuCount = new JLabel("Jumlah Menu: "+Integer.toString(listMenu.size()));
 		menuCount.setBounds(20,260,250,25);
 		menuCount.setFont(new Font("sans-serif", Font.PLAIN, 12));
 		viewMenu.add(menuCount);
+		
+		JLabel sortLabel = new JLabel("Opsi Pengurutan: ");
+		sortLabel.setBounds(20,300,120,25);
+		viewMenu.add(sortLabel);
+		
+		JComboBox sortingOptions = new JComboBox(CB_CONTENT);
+		sortingOptions.setBounds(140,300,150,25);
+		sortingOptions.setFont(new Font("sans-serif", Font.PLAIN, 12));
+		viewMenu.add(sortingOptions);
+		
+		JButton applyButton = new JButton("Pilih");
+		applyButton.setFont(new Font("sans-serif", Font.PLAIN, 12));
+		applyButton.setBackground(Color.white);
+		applyButton.setBounds(310,300,100,25);
+		viewMenu.add(applyButton);
+		
+		applyButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				String pickedMode;
+				pickedMode = (String) sortingOptions.getSelectedItem().toString();
+				
+				int option = 0;
+				while (option < CB_CONTENT.length) {
+					if (CB_CONTENT[option].equals(pickedMode)) {
+						break;
+					}
+					else {
+						option++;
+					}
+				}
+				
+				switch(option+1) {
+				case 1:
+					sortOp = Database.sortingMode.CODE_ASC; break;
+				case 2:
+					sortOp = Database.sortingMode.CODE_DESC; break;
+				case 3:
+					sortOp = Database.sortingMode.NAME_ASC; break;
+				case 4:
+					sortOp = Database.sortingMode.NAME_DESC; break;
+				case 5:
+					sortOp = Database.sortingMode.PRICE_ASC; break;
+				case 6:
+					sortOp = Database.sortingMode.PRICE_DESC; break;
+				case 7:
+					sortOp = Database.sortingMode.STOCK_ASC; break;
+				case 8:
+					sortOp = Database.sortingMode.STOCK_DESC; break;
+				}
+				
+				isSorted = true;
+				
+				// Reset
+				mainPanel.removeAll();
+				mainPanel.repaint();
+				mainPanel.revalidate();
+				
+				try {
+					view(mainPanel);
+				} catch (SQLException e1) {
+					e1.printStackTrace();
+				}
+				mainPanel.repaint();
+				mainPanel.revalidate();
+			}
+		});
 		
 		viewMenu.setBorder(BorderFactory.createTitledBorder("*View"));
 		
@@ -321,12 +412,34 @@ public class Main extends JFrame{
 		mainPanel.add(viewMenu, BorderLayout.CENTER);
 	}
 	
-	public void viewTable(JPanel vp) throws SQLException {
+	public void listPreparation() throws SQLException {
+		// Clear Menu Vector
+		listMenu.clear();
+		
+		ResultSet dataMenu; 
+		if (isSorted) {
+			dataMenu = myDB.sort(sortOp);
+		} else {
+			dataMenu = myDB.getData();
+		}
+		
+		while (dataMenu.next()) {
+			String indexCode, indexName; int indexPrice, indexStock;
+			indexCode = dataMenu.getString("Kode");
+			indexName = dataMenu.getString("Nama");
+			indexPrice = dataMenu.getInt("Harga");
+			indexStock = dataMenu.getInt("Stok");
+			
+			Menu indexMenu = new Menu(indexCode, indexName, indexPrice, indexStock);
+			
+			listMenu.add(indexMenu);
+		}
+	}
+	
+	public void viewTable(JPanel vp){
 		JLabel viewTitle = new JLabel("Daftar Menu:");
 		viewTitle.setBounds(20, 20, 100, 25);
 		vp.add(viewTitle);
-		
-		ResultSet dataMenu = myDB.getData();
 		
 		Vector<String> columnNames = new Vector<String>();
 		columnNames.addElement("Kode");
@@ -336,25 +449,12 @@ public class Main extends JFrame{
 		
 		Vector<Vector<String>> rowData = new Vector<>();
 		
-		// Clear Menu Vector
-		listMenu.clear();
-		
-		while (dataMenu.next()) {
+		for(int i = 0; i < listMenu.size(); i++) {
 			Vector<String> indexVector = new Vector<String>();
-			String indexCode, indexName; int indexPrice, indexStock;
-			indexCode = dataMenu.getString("Kode");
-			indexName = dataMenu.getString("Nama");
-			indexPrice = dataMenu.getInt("Harga");
-			indexStock = dataMenu.getInt("Stok");
-			
-			Menu indexMenu = new Menu(indexCode, indexName, indexPrice, indexStock);
-			
-			indexVector.add(indexCode);
-			indexVector.add(indexName);
-			indexVector.add(Integer.toString(indexPrice));
-			indexVector.add(Integer.toString(indexStock));
-			
-			listMenu.add(indexMenu);
+			indexVector.add(listMenu.get(i).getKode());
+			indexVector.add(listMenu.get(i).getNama());
+			indexVector.add(Integer.toString(listMenu.get(i).getHarga()));
+			indexVector.add(Integer.toString(listMenu.get(i).getStok()));
 			
 			rowData.add(indexVector);
 		}
@@ -371,24 +471,28 @@ public class Main extends JFrame{
 		vp.add(scroll);
 	}
 	
-	public void update(JPanel mainPanel) {
+	public void update(JPanel mainPanel) throws SQLException {
+		listPreparation();
+		
 		JPanel updateMenu =  new JPanel(null);
 		
 		updateMenu.setBorder(BorderFactory.createTitledBorder("*Update"));
 		
-		try {
-			viewTable(updateMenu);
-		} catch (SQLException e1) {
-			e1.printStackTrace();
-		}
+		viewTable(updateMenu);
 		
-		JLabel codeLabel = new JLabel("Kode menu yang ingin di-update:");
+		JLabel codeLabel = new JLabel("Kode Menu yang Ingin Di-update:");
 		codeLabel.setBounds(20,260,200,25);
 		updateMenu.add(codeLabel);
 		
 		JTextField codeInput = new JTextField();
 		codeInput.setBounds(230,260,100,25);
 		updateMenu.add(codeInput);
+		
+		JLabel notFoundLabel = new JLabel("");
+		notFoundLabel.setBounds(350,260,200,25);
+		notFoundLabel.setFont(new Font("sans-serif", Font.ITALIC, 11));
+		notFoundLabel.setForeground(Color.red);
+		updateMenu.add(notFoundLabel);
 		
 		JLabel newPriceLabel = new JLabel("Harga baru:");
 		newPriceLabel.setBounds(20,290,100,25);
@@ -416,7 +520,7 @@ public class Main extends JFrame{
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				// Update data
-				String refCode; int newPrice, newStock;
+				String refCode; int newPrice, newStock; boolean codeFound = false;
 				
 				refCode = codeInput.getText();
 				
@@ -425,37 +529,47 @@ public class Main extends JFrame{
 				
 				for(int i = 0; i < listMenu.size(); i++) {
 					if(listMenu.get(i).getKode().equals(refCode)) {
+						codeFound = true;
+						
 						myDB.update(refCode, newPrice, newStock);
 						
 						// Message Dialog
 						JOptionPane.showMessageDialog(null, "Menu ["+refCode+"] telah di-update.");
+						
+						// Reset
+						mainPanel.removeAll();
+						mainPanel.repaint();
+						mainPanel.revalidate();
+						
+						try {
+							update(mainPanel);
+						} catch (SQLException e1) {
+							e1.printStackTrace();
+						}
+						mainPanel.repaint();
+						mainPanel.revalidate();
 					}
 				}
 				
-				// Reset
-				mainPanel.removeAll();
-				mainPanel.repaint();
-				mainPanel.revalidate();
-				
-				update(mainPanel);
-				mainPanel.repaint();
-				mainPanel.revalidate();
+				if(!codeFound) {
+					notFoundLabel.setText("kode tidak ditemukan");
+					
+					System.out.println("kode tidak ditemukan.");
+				}
 			}
 		});
 		
 		mainPanel.add(updateMenu, BorderLayout.CENTER);
 	}
 	
-	public void delete(JPanel mainPanel) {
+	public void delete(JPanel mainPanel) throws SQLException {
+		listPreparation();
+		
 		JPanel deleteMenu =  new JPanel(null);
 		
 		deleteMenu.setBorder(BorderFactory.createTitledBorder("*Delete"));
 		
-		try {
-			viewTable(deleteMenu);
-		} catch (SQLException e1) {
-			e1.printStackTrace();
-		}
+		viewTable(deleteMenu);
 		
 		JLabel codeLabel = new JLabel("Kode dari menu yang ingin dihapus:");
 		codeLabel.setBounds(20,260,200,25);
@@ -493,7 +607,11 @@ public class Main extends JFrame{
 				mainPanel.repaint();
 				mainPanel.revalidate();
 				
-				delete(mainPanel);
+				try {
+					delete(mainPanel);
+				} catch (SQLException e1) {
+					e1.printStackTrace();
+				}
 				mainPanel.repaint();
 				mainPanel.revalidate();
 			}
@@ -510,4 +628,5 @@ public class Main extends JFrame{
 		
 		return kode;
 	}
+	
 }
