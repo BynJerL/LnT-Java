@@ -2,12 +2,29 @@ package finalProjectBNCC;
 
 import java.sql.*;
 
+import javax.swing.JOptionPane;
+
 public class Database {
+	
+	static final String DB_URL = "jdbc:mysql://localhost:3306/puddingdb";
+	static final String USER = "root";
+	static final String PASS = "";
 	
 	Connection conn;
 	Statement stat;
 	PreparedStatement prepstat;
 	ResultSet rs;
+	
+	public enum sortingMode {
+		CODE_ASC,
+		CODE_DESC,
+		NAME_ASC,
+		NAME_DESC,
+		PRICE_ASC,
+		PRICE_DESC,
+		STOCK_ASC,
+		STOCK_DESC
+	}
 	
 	public Database() {
 		connect();
@@ -21,10 +38,12 @@ public class Database {
 		}
 		
 		try {
-			conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/puddingdb","root","");
+			conn = DriverManager.getConnection(DB_URL,USER, PASS);
 			stat = conn.createStatement();
 		} catch (SQLException e) {
 			e.printStackTrace();
+			JOptionPane.showMessageDialog(null, "Gagal terhubung ke database!");
+			System.exit(0);
 		}
 	}
 	
@@ -74,5 +93,60 @@ public class Database {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public ResultSet sort(sortingMode sm) {
+		switch (sm) {
+		case CODE_ASC:
+			try {
+				rs = stat.executeQuery("SELECT * FROM daftarmenu ORDER BY Kode ASC");
+			} catch (SQLException e) {
+				e.printStackTrace();
+			} break;
+		case CODE_DESC:
+			try {
+				rs = stat.executeQuery("SELECT * FROM daftarmenu ORDER BY Kode DESC");
+			} catch (SQLException e) {
+				e.printStackTrace();
+			} break;
+		case NAME_ASC:
+			try {
+				rs = stat.executeQuery("SELECT * FROM daftarmenu ORDER BY Nama ASC");
+			} catch (SQLException e) {
+				e.printStackTrace();
+			} break;
+		case NAME_DESC:
+			try {
+				rs = stat.executeQuery("SELECT * FROM daftarmenu ORDER BY Nama DESC");
+			} catch (SQLException e) {
+				e.printStackTrace();
+			} break;
+		case PRICE_ASC:
+			try {
+				rs = stat.executeQuery("SELECT * FROM daftarmenu ORDER BY Harga ASC");
+			} catch (SQLException e) {
+				e.printStackTrace();
+			} break;
+		case PRICE_DESC:
+			try {
+				rs = stat.executeQuery("SELECT * FROM daftarmenu ORDER BY Harga DESC");
+			} catch (SQLException e) {
+				e.printStackTrace();
+			} break;
+		case STOCK_ASC:
+			try {
+				rs = stat.executeQuery("SELECT * FROM daftarmenu ORDER BY Stok ASC");
+			} catch (SQLException e) {
+				e.printStackTrace();
+			} break;
+		case STOCK_DESC:
+			try {
+				rs = stat.executeQuery("SELECT * FROM daftarmenu ORDER BY Stok DESC");
+			} catch (SQLException e) {
+				e.printStackTrace();
+			} break;
+		}
+		
+		return rs;
 	}
 }
