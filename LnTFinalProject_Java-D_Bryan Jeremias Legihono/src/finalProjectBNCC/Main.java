@@ -38,12 +38,11 @@ public class Main extends JFrame{
 	// Chars
 	String ALPHABETH_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 	String NUMBER_CHARS = "0123456789";
-	String[] CB_CONTENT = {
+	String[] CB_CONTENT = {"Default",
 			"Kode (naik)","Kode (turun)",
 			"Nama (naik)","Nama (turun)",
 			"Harga (naik)","Harga (turun)",
-			"Stok (naik)","Stok (turun)",
-			"Default"};
+			"Stok (naik)","Stok (turun)"};
 	
 	// Random
 	Random rand = new Random();
@@ -54,6 +53,7 @@ public class Main extends JFrame{
 	
 	// Other
 	boolean isSorted = false;
+	int activeMenu = 0;
 	
 	public Main() {
 		window();
@@ -268,7 +268,7 @@ public class Main extends JFrame{
 		stockField.setBounds(120, 80, 250, 25);
 		insertMenu.add(stockField);
 		
-		submitButton = new JButton("Submit");
+		submitButton = new JButton("Tambah");
 		submitButton.setFont(new Font("sans-serif", Font.PLAIN, 12));
 		submitButton.setBackground(Color.white);
 		submitButton.setBounds(120, 120, 100, 25);
@@ -345,6 +345,7 @@ public class Main extends JFrame{
 		viewMenu.add(sortLabel);
 		
 		JComboBox sortingOptions = new JComboBox(CB_CONTENT);
+		sortingOptions.setSelectedIndex(activeMenu);
 		sortingOptions.setBounds(140,300,150,25);
 		sortingOptions.setFont(new Font("sans-serif", Font.PLAIN, 12));
 		viewMenu.add(sortingOptions);
@@ -371,7 +372,11 @@ public class Main extends JFrame{
 					}
 				}
 				
-				switch(option+1) {
+				activeMenu = option;
+				
+				switch(option) {
+				case 0:
+					defaultMode = true; break;
 				case 1:
 					sortOp = Database.sortingMode.CODE_ASC; break;
 				case 2:
@@ -388,8 +393,6 @@ public class Main extends JFrame{
 					sortOp = Database.sortingMode.STOCK_ASC; break;
 				case 8:
 					sortOp = Database.sortingMode.STOCK_DESC; break;
-				case 9:
-					defaultMode = true;
 				}
 				
 				if (!defaultMode) {
@@ -487,7 +490,7 @@ public class Main extends JFrame{
 		
 		viewTable(updateMenu);
 		
-		JLabel codeLabel = new JLabel("Kode Menu yang Ingin Di-update:");
+		JLabel codeLabel = new JLabel("Kode menu yang ingin diperbarui:");
 		codeLabel.setBounds(20,260,200,25);
 		updateMenu.add(codeLabel);
 		
@@ -517,7 +520,7 @@ public class Main extends JFrame{
 		newStockField.setBounds(130,320,200,25);
 		updateMenu.add(newStockField);
 		
-		JButton updateButton = new JButton("Update");
+		JButton updateButton = new JButton("Perbarui");
 		updateButton.setFont(new Font("sans-serif", Font.PLAIN, 12));
 		updateButton.setBackground(Color.white);
 		updateButton.setBounds(130,360,100,25);
@@ -531,17 +534,31 @@ public class Main extends JFrame{
 				
 				refCode = codeInput.getText();
 				
-				newPrice = Integer.parseInt(newPriceField.getText());
-				newStock = Integer.parseInt(newStockField.getText());
-				
 				for(int i = 0; i < listMenu.size(); i++) {
 					if(listMenu.get(i).getKode().equals(refCode)) {
 						codeFound = true;
 						
+						if(newPriceField.getText().equals("")) {
+							newPrice = listMenu.get(i).getHarga();
+						} else {
+							newPrice = Integer.parseInt(newPriceField.getText());
+						}
+						
+						if(newStockField.getText().equals("")) {
+							newStock = listMenu.get(i).getStok();
+						} else {
+							newStock = Integer.parseInt(newStockField.getText());
+						}
+						
 						myDB.update(refCode, newPrice, newStock);
 						
+						// Break if no changes:
+						if(newPriceField.getText().equals("") && newStockField.getText().equals("")) {
+							break;
+						}
+						
 						// Message Dialog
-						JOptionPane.showMessageDialog(null, "Menu ["+refCode+"] telah di-update.");
+						JOptionPane.showMessageDialog(null, "Menu ["+refCode+"] telah diperbarui.");
 						
 						// Reset
 						mainPanel.removeAll();
@@ -562,6 +579,9 @@ public class Main extends JFrame{
 					notFoundLabel.setText("kode tidak ditemukan");
 					
 					System.out.println("kode tidak ditemukan.");
+				} else {
+					// Only executed when no changes on the menu
+					notFoundLabel.setText("tidak ada perubahan pada data menu");
 				}
 			}
 		});
@@ -592,7 +612,7 @@ public class Main extends JFrame{
 		notFoundLabel.setForeground(Color.red);
 		deleteMenu.add(notFoundLabel);
 		
-		JButton deleteButton = new JButton("Delete");
+		JButton deleteButton = new JButton("Hapus");
 		deleteButton.setFont(new Font("sans-serif", Font.PLAIN, 12));
 		deleteButton.setBackground(Color.white);
 		deleteButton.setBounds(130,300,100,25);
@@ -649,5 +669,4 @@ public class Main extends JFrame{
 		
 		return kode;
 	}
-	
 }
