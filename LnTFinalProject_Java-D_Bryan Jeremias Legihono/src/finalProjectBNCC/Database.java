@@ -61,6 +61,20 @@ public class Database {
 		}
 	}
 	
+	public void insert(String code, String name, int price, int stock) {
+		try {
+			prepstat = conn.prepareStatement("INSERT INTO daftarmenu (Kode, Nama, Harga, Stok) VALUES (?, ?, ?, ?)");
+			prepstat.setString(1, code);
+			prepstat.setString(2, name);
+			prepstat.setInt(3, price);
+			prepstat.setInt(4, stock);
+			prepstat.execute();
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
 	public ResultSet getData() {
 		try {
 			rs = stat.executeQuery("SELECT * FROM daftarmenu");
